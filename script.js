@@ -4,10 +4,6 @@
   const lightboxImg = lightboxEl.querySelector('.lightbox__img');
   const lightboxCaption = lightboxEl.querySelector('.lightbox__caption');
   const closeBtn = lightboxEl.querySelector('.lightbox__close');
-  const chooseDirBtn = document.getElementById('chooseDirBtn');
-  const dirPicker = document.getElementById('dirPicker');
-  const folderInput = document.getElementById('folderInput');
-  const applyFolderBtn = document.getElementById('applyFolderBtn');
   const tpl = document.getElementById('tpl-card');
 
   const stageEl = lightboxEl.querySelector('.lightbox__stage');
@@ -15,44 +11,6 @@
   const zoomInBtn = document.getElementById('zoomInBtn');
   const zoomOutBtn = document.getElementById('zoomOutBtn');
   const zoomResetBtn = document.getElementById('zoomResetBtn');
-
-  // 默认文件夹名
-  const DEFAULT_FOLDER = '图片';
-
-  // 静态清单作为兜底
-  const fallbackImages = [
-    '图片/微信图片_20250826202231_258_272.jpg',
-    '图片/微信图片_20250816005329_60.jpg',
-    '图片/微信图片_20250816005329_61.jpg',
-    '图片/微信图片_20250816005329_62.jpg',
-    '图片/微信图片_20250816005329_63.jpg',
-    '图片/微信图片_20250816005329_66.jpg',
-    '图片/微信图片_20250816005329_67.jpg',
-    '图片/微信图片_20250816005328_64.jpg',
-    '图片/微信图片_20250816005328_65.jpg',
-    '图片/微信图片_20250816005328_68.jpg',
-    '图片/微信图片_20250816005328_69.jpg',
-    '图片/微信图片_20250816005328_70.jpg',
-    '图片/微信图片_20250816005328_71.jpg',
-    '图片/微信图片_20250816005328_72.jpg',
-    '图片/output/ComfyUI_0001.jpg',
-    '图片/output/ComfyUI_0003.jpg',
-    '图片/output/ComfyUI_0004.jpg',
-    '图片/output/ComfyUI_0005.jpg',
-    '图片/output/ComfyUI_0006.jpg',
-    '图片/output/ComfyUI_0009.jpg',
-    '图片/output/ComfyUI_0010.jpg',
-    '图片/output/ComfyUI_0011.jpg',
-    '图片/output/ComfyUI_0013.jpg',
-    '图片/output/ComfyUI_0014.jpg',
-    '图片/output/ComfyUI_0015.jpg',
-    '图片/output/ComfyUI_0016.jpg',
-    '图片/output/ComfyUI_0017.jpg',
-    '图片/output/ComfyUI_0018.jpg',
-    '图片/output/ComfyUI_0019.jpg',
-    '图片/output/ComfyUI_0020.jpg',
-    '图片/output/ComfyUI_0021.jpg'
-  ];
 
   function pathToTitle(path){
     const name = path.split('/').pop();
@@ -142,62 +100,24 @@
   function onPointerUp(){ dragging = false; canvasEl.classList.remove('dragging'); window.removeEventListener('pointermove', onPointerMove); }
   stageEl?.addEventListener('pointerdown', onPointerDown);
 
-  // ---------------- 可配置图片文件夹 ----------------
-  function getFolder(){ return (localStorage.getItem('galleryFolder') || DEFAULT_FOLDER).replace(/^\/+|\/+$/g, ''); }
-  function setFolder(v){ const clean = (v || '').replace(/^\/+|\/+$/g, ''); localStorage.setItem('galleryFolder', clean || DEFAULT_FOLDER); }
+  // ---------------- 仅加载 images.json ----------------
+  async function loadImagesJson(){
+    const res = await fetch('images.json?ts=' + Date.now());
+    if(!res.ok) throw new Error('images.json 加载失败');
+    const data = await res.json();
+    if(Array.isArray(data)) return data;
+    if(data && Array.isArray(data.images)) return data.images;
+    throw new Error('images.json 格式不正确');
+  }
 
-  applyFolderBtn?.addEventListener('click', async () => {
-    const val = (folderInput.value || '').trim();
-    if(val){ setFolder(val); await tryRenderFromFolder(); }
-  });
-
-  // 尝试从服务器目录索引加载（需要服务器允许列目录）
-  async function listImagesFromFolder(folder){
-    const exts = ['jpg','jpeg','png','gif','webp'];
-    const urls = [];
+  async function init(){
     try {
-      // 访问目录：/folder/ 与 /folder/output/
-      const entries = [folder + '/', folder + '/output/'];
-      for(const dir of entries){
-        const res = await fetch(dir);
-        if(!res.ok) continue;
-        const html = await res.text();
-        const matches = [...html.matchAll(/href="([^"]+)"/g)].map(m => m[1]);
-        for(const href of matches){
-          const name = decodeURIComponent(href).split('?')[0];
-          const lower = name.toLowerCase();
-          if(exts.some(ext => lower.endsWith('.' + ext))){
-            const full = dir + href;
-            urls.push(full);
-          }
-        }
-      }
-    } catch (e) {
-      // ignore
+      const urls = await loadImagesJson();
+      renderCards(urls);
+    } catch (err){
+      galleryEl.innerHTML = `<div style="color:#c00;padding:16px">${(err && err.message) || '无法加载 images.json'}</div>`;
     }
-    return urls;
   }
 
-  async function tryRenderFromFolder(){
-    const folder = getFolder();
-    folderInput.value = folder;
-    let urls = await listImagesFromFolder(folder);
-    if(urls.length === 0){
-      // 兜底：尝试用 fallback，但把前缀替换为用户配置的文件夹名
-      urls = fallbackImages.map(u => u.replace(/^图片\b/, folder));
-    }
-    renderCards(urls);
-  }
-
-  // 回退：允许用户直接选择本地文件夹
-  chooseDirBtn.addEventListener('click', () => dirPicker.click());
-  dirPicker.addEventListener('change', () => {
-    const files = Array.from(dirPicker.files || []);
-    const urls = files.filter(f => /\.(jpe?g|png|gif|webp)$/i.test(f.name)).map(f => URL.createObjectURL(f));
-    renderCards(urls);
-  });
-
-  // 初始化
-  folderInput.value = getFolder();
-  tryRenderFromFolder();
+  init();
 })();
