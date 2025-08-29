@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图片画廊</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>图片画廊</h1>
+    <div class="actions">
+      <input id="folderInput" type="text" placeholder="图片文件夹，相对路径，如：图片" style="width:200px" />
+      <button id="applyFolderBtn" type="button">应用文件夹</button>
+      <button id="chooseDirBtn" type="button">选择图片文件夹</button>
+      <input id="dirPicker" type="file" webkitdirectory multiple style="display:none" />
+    </div>
+  </header>
+
+  <main>
+    <div id="gallery" class="gallery" aria-live="polite"></div>
+  </main>
+
+  <div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-label="预览大图">
+    <button class="lightbox__close" aria-label="关闭">×</button>
+    <div class="lightbox__controls" role="toolbar" aria-label="缩放控制">
+      <button id="zoomOutBtn" type="button" title="缩小">－</button>
+      <button id="zoomResetBtn" type="button" title="重置">重置</button>
+      <button id="zoomInBtn" type="button" title="放大">＋</button>
+    </div>
+    <div class="lightbox__stage">
+      <div class="lightbox__canvas">
+        <img class="lightbox__img" alt="预览大图" />
+      </div>
+    </div>
+    <div class="lightbox__caption"></div>
+  </div>
+
+  <template id="tpl-card">
+    <figure class="card">
+      <div class="card__thumbWrap">
+        <img class="card__img" alt="图片缩略图" loading="lazy" />
+      </div>
+      <figcaption class="card__caption"></figcaption>
+    </figure>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>

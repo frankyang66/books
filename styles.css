@@ -1,0 +1,44 @@
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; color: #222; background: #fafafa; }
+
+.site-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #fff; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10; }
+.site-header h1 { margin: 0; font-size: 18px; }
+.site-header .actions { display: flex; gap: 8px; }
+.site-header button { padding: 8px 12px; border: 1px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; }
+.site-header button:hover { background: #f3f3f3; }
+
+.gallery { --minColWidth: 180px; display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--minColWidth), 1fr)); gap: 12px; padding: 16px; }
+
+.card { margin: 0; display: flex; flex-direction: column; background: #fff; border: 1px solid #eee; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+.card__thumbWrap { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: #f0f0f0; }
+.card__img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s ease; }
+.card:hover .card__img { transform: scale(1.03); }
+.card__caption { padding: 10px 12px; font-size: 14px; color: #444; border-top: 1px solid #f2f2f2; word-break: break-all; }
+
+.lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.8); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 1000; flex-direction: column; }
+.lightbox[aria-hidden="false"] { display: flex; }
+
+/* 控件置于顶部中央 */
+.lightbox__controls { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 1001; }
+.lightbox__controls button { padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.6); background: rgba(0,0,0,.35); color: #fff; cursor: pointer; }
+.lightbox__controls button:hover { background: rgba(0,0,0,.5); }
+
+/* 舞台区域：约束可视范围，允许内部画布缩放/平移 */
+.lightbox__stage { width: min(96vw, 1600px); height: min(86vh, 1000px); background: rgba(255,255,255,.02); border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; touch-action: none; }
+
+/* 画布承载图片，应用 transform */
+.lightbox__canvas { will-change: transform; cursor: grab; transform-origin: 0 0; }
+.lightbox__canvas.dragging { cursor: grabbing; }
+
+/* 大图由 transform 控制，不再使用最大宽高限制 */
+.lightbox__img { display: block; max-width: none; max-height: none; }
+
+.lightbox__caption { margin-top: 12px; color: #fff; text-align: center; max-width: 80vw; }
+.lightbox__close { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255,255,255,.9); cursor: pointer; font-size: 22px; line-height: 1; }
+.lightbox__close:hover { background: #fff; }
+
+@media (max-width: 480px) {
+  .site-header h1 { font-size: 16px; }
+  .gallery { --minColWidth: 140px; gap: 8px; padding: 12px; }
+}
